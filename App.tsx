@@ -8,6 +8,7 @@
 import React, {useCallback} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Button,
   Image,
@@ -79,24 +80,32 @@ const getGithubUser = async (username: string) => {
 
     return res.data;
   } catch (error: any) {
-    console.error(error.message);
+    throw error;
   }
 };
 
 const UserSearchForm = () => {
   const [username, setUserName] = React.useState('');
-  const [userInfo, setUserInfo] = React.useState<IUserInfo>();
+  const [userInfo, setUserInfo] = React.useState<IUserInfo | null>(null);
+  const [status, setStatus] = React.useState<
+    'REQUEST' | 'SUCCESS' | 'FAILURE'
+  >();
 
   const getUser = async (username: string) => {
-    const user = await getGithubUser(username);
+    try {
+      const user = await getGithubUser(username);
 
-    if (!user) {
-      Alert.alert('사용자를 찾을 수 없습니다.');
-      return;
+      if (!user) {
+        throw new Error('Not Found User');
+      }
+
+      setStatus('SUCCESS');
+      setUserInfo(user);
+      setUserName('');
+    } catch (error) {
+      setStatus('FAILURE');
+      setUserInfo(null);
     }
-
-    setUserInfo(user);
-    setUserName('');
   };
 
   const handleChangeText = useCallback((text: string) => {
@@ -108,22 +117,48 @@ const UserSearchForm = () => {
       Alert.alert('유저 이름을 입력하세요');
       return;
     }
+
+    setStatus('REQUEST');
     getUser(username);
   }, [username]);
 
+  const profileView = React.useMemo(() => {
+    if (status === 'REQUEST') {
+      return <ActivityIndicator size="large" />;
+    }
+
+    if (!userInfo) {
+      return <Text>Not Found</Text>;
+    }
+
+    return (
+      <>
+        <Image
+          source={{
+            uri: userInfo.avatar_url,
+          }}
+          style={{width: 150, height: 150}}
+        />
+        <Text>{userInfo.name}</Text>
+      </>
+    );
+  }, [status, userInfo]);
+
+  // 검색 -> 로딩 인디케이터 -> 찾음, 못찾음
   return (
     <View style={styles.searchForm}>
-      {userInfo && (
-        <View>
-          <Image
-            source={{
-              uri: userInfo.avatar_url,
-            }}
-            style={{width: 150, height: 150}}
-          />
-          <Text>{userInfo.name}</Text>
+      {status && (
+        <View
+          style={{
+            width: 150,
+            height: 150,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {profileView}
         </View>
       )}
+
       <TextInput
         style={styles.input}
         placeholder="사용자 이름을 검색하세요"
@@ -131,6 +166,7 @@ const UserSearchForm = () => {
         autoCapitalize="none"
         autoCorrect={false}
         onChangeText={handleChangeText}
+        onSubmitEditing={handlePress}
       />
       <Button onPress={handlePress} title="Search" />
     </View>
