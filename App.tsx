@@ -55,6 +55,14 @@ function Section({children, title}: SectionProps): JSX.Element {
   );
 }
 
+const HelloWorld = () => {
+  return (
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <Text>Try editing me!</Text>
+    </View>
+  );
+};
+
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -72,6 +80,7 @@ function App(): JSX.Element {
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
         <Header />
+        <HelloWorld />
         <View
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
