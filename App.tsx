@@ -5,12 +5,13 @@
  * @format
  */
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   ActivityIndicator,
   Alert,
   Button,
+  FlexAlignType,
   Image,
   SafeAreaView,
   ScrollView,
@@ -18,6 +19,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
@@ -173,6 +175,124 @@ const UserSearchForm = () => {
   );
 };
 
+const FlexContainer = () => {
+  return (
+    <View style={[styles.container, {flexDirection: 'column', height: 100}]}>
+      <View style={{flex: 1, backgroundColor: 'red'}} />
+      <View style={{flex: 2, backgroundColor: 'blue'}} />
+      <View style={{flex: 3, backgroundColor: 'yellow'}} />
+    </View>
+  );
+};
+
+// const FlexDirectionBasics = () => {
+//   const [flexDirection, setFlexDirection] = useState('column');
+//   const [direction, setDirection] = useState('ltr');
+//   return (
+//     <PreviewLayout
+//       label="direction"
+//       values={['ltr', 'rtl']}
+//       selectedValue={direction}
+//       setSelectedValue={setDirection}>
+//       <View style={[styles.box, {backgroundColor: 'powderblue'}]} />
+//       <View style={[styles.box, {backgroundColor: 'skyblue'}]} />
+//       <View style={[styles.box, {backgroundColor: 'steelblue'}]} />
+//     </PreviewLayout>
+//   );
+// };
+
+const AlignSelfLayout = () => {
+  const [alignSelf, setAlignSelf] = useState('stretch');
+
+  return (
+    <PreviewLayout
+      label="alignSelf"
+      selectedValue={alignSelf}
+      values={['center', 'flex-start', 'flex-end', 'stretch', 'baseline']}
+      setSelectedValue={setAlignSelf}>
+      <View
+        style={[
+          styles.box,
+          {
+            alignSelf: alignSelf as FlexAlignType,
+            width: 'auto',
+            minWidth: 50,
+            backgroundColor: 'powderblue',
+          },
+        ]}
+      />
+      <View style={[styles.box, {backgroundColor: 'skyblue'}]} />
+      <View style={[styles.box, {backgroundColor: 'steelblue'}]} />
+    </PreviewLayout>
+  );
+};
+
+const AlignContentLayout = () => {
+  const [alignContent, setAlignContent] = useState('flex-start');
+
+  return (
+    <PreviewLayout
+      label="alignContent"
+      selectedValue={alignContent}
+      values={[
+        'flex-start',
+        'flex-end',
+        'stretch',
+        'center',
+        'space-between',
+        'space-around',
+      ]}
+      setSelectedValue={setAlignContent}>
+      <View style={[styles.box, {backgroundColor: 'orangered'}]} />
+      <View style={[styles.box, {backgroundColor: 'orange'}]} />
+      <View style={[styles.box, {backgroundColor: 'mediumseagreen'}]} />
+      <View style={[styles.box, {backgroundColor: 'deepskyblue'}]} />
+      <View style={[styles.box, {backgroundColor: 'mediumturquoise'}]} />
+      <View style={[styles.box, {backgroundColor: 'mediumslateblue'}]} />
+      <View style={[styles.box, {backgroundColor: 'purple'}]} />
+    </PreviewLayout>
+  );
+};
+
+interface PreviewLayoutProps {
+  label: string;
+  values: string[];
+  selectedValue: string;
+  setSelectedValue: (value: string) => void;
+}
+
+const PreviewLayout = ({
+  label,
+  children,
+  values,
+  selectedValue,
+  setSelectedValue,
+}: PropsWithChildren<PreviewLayoutProps>) => {
+  return (
+    <View style={{padding: 10, flex: 1}}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.row}>
+        {values.map(value => (
+          <TouchableOpacity
+            key={value}
+            onPress={() => setSelectedValue(value)}
+            style={[styles.button, selectedValue === value && styles.selected]}>
+            <Text
+              style={[
+                styles.buttonLabel,
+                selectedValue === value && styles.selectedLabel,
+              ]}>
+              {value}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.container}>{children}</View>
+    </View>
+  );
+};
+
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -186,51 +306,64 @@ function App(): JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <UserSearchForm />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Info">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            <Text>Hello React Native Cli World!</Text>
-          </Section>
-          <LearnMoreLinks />
+      <View
+        style={{
+          flexDirection: 'column',
+          height: '100%',
+        }}>
+        <View style={{flex: 1}}>
+          <FlexContainer />
         </View>
-      </ScrollView>
+        <View style={{flex: 2}}>
+          {/* <FlexDirectionBasics /> */}
+          <AlignSelfLayout />
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
+  container: {
+    flex: 1,
     marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+    backgroundColor: 'aliceblue',
   },
-  highlight: {
-    fontWeight: '700',
-  },
-  input: {
+  box: {
+    width: 50,
     height: 50,
-    borderRadius: 5,
-    padding: 5,
   },
-  searchForm: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  button: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 4,
+    backgroundColor: 'oldlace',
+    alignSelf: 'flex-start',
+    marginHorizontal: '1%',
+    marginBottom: 6,
+    minWidth: '48%',
+    textAlign: 'center',
+  },
+  selected: {
+    backgroundColor: 'coral',
+    borderWidth: 0,
+  },
+  buttonLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'coral',
+  },
+  selectedLabel: {
+    color: '#fff',
+  },
+  label: {
+    textAlign: 'center',
+    marginBottom: 10,
+    fontSize: 24,
   },
 });
 
